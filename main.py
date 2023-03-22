@@ -132,6 +132,7 @@ if(st.button('Generate Music')):
 
             # output.abc ---> output.mid
             s = converter.parse('output.abc')
+            s.quarterLength = 0.5
             s.write('midi', fp='output.mid')
 
             # song = AudioSegment.from_file("output.abc")
