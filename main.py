@@ -34,7 +34,7 @@ def generate_sequence(epoch_num, initial_index, seq_length):
     unique_chars = len(index_to_char)
     
     model = make_model(unique_chars)
-    model.load_weights("model\\" + "weights.{}.h5".format(epoch_num*10))
+    model.load_weights("Music-Generator\\model\\" + "weights.{}.h5".format(epoch_num*10))
      
     sequence_index = [initial_index]
     
