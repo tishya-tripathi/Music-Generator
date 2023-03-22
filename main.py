@@ -131,16 +131,16 @@ if(st.button('Generate Music')):
                 pass
 
             # output.abc ---> output.mid
-            s = converter.parse('output.abc')
-            s.quarterLength = 0.5
-            s.write('midi', fp='output.mid')
+            # s = converter.parse('output.abc')
+            # s.quarterLength = 0.5
+            # s.write('midi', fp='output.mid')
 
             # song = AudioSegment.from_file("output.abc")
             # song.export("output.wav", format="wav")
             
             # output.mid ---> output.wav
-            FluidSynth().midi_to_audio('output.mid', 'output.wav')
+            # FluidSynth().midi_to_audio('output.mid', 'output.wav')
 
-            st.audio("output.wav", format="audio/wav")
+            # st.audio("output.wav", format="audio/wav")
 
 # ---------------------------------------------------------------------------------------------
