@@ -103,11 +103,11 @@ if(st.button('Generate Music')):
             abcFile.close()
             st.subheader("ABC Notation: ")       
             st.text_area("", value=music, height=400)
-            try:
+            try:                                # pyperclip work only in Localhost!
                 pyperclip.copy(music)
+                st.success("Copied to clipboard")
             except:
                 pass
-            st.success("Copied to clipboard")
 
             # output.abc ---> output.mid
             # s = converter.parse('output.abc')
