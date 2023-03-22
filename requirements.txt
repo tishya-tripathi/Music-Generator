@@ -3,3 +3,5 @@ numpy==1.23.1
 streamlit==1.20.0
 tensorflow==2.11.0
 pyperclip
+music21
+midi2audio

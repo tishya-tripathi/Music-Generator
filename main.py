@@ -4,10 +4,31 @@ from keras.models import Sequential
 from keras.layers import LSTM, Dropout, Dense, Activation, Embedding
 import pyperclip
 import os
-# from music21 import converter
-# from midi2audio import FluidSynth
+from music21 import converter
+# from pydub import AudioSegment
+from midi2audio import FluidSynth
 
 index_to_char = {0: '\n', 1: ' ', 2: '!', 3: '"', 4: '#', 5: '%', 6: '&', 7: "'", 8: '(', 9: ')', 10: '+', 11: ',', 12: '-', 13: '.', 14: '/', 15: '0', 16: '1', 17: '2', 18: '3', 19: '4', 20: '5', 21: '6', 22: '7', 23: '8', 24: '9', 25: ':', 26: '=', 27: '?', 28: 'A', 29: 'B', 30: 'C', 31: 'D', 32: 'E', 33: 'F', 34: 'G', 35: 'H', 36: 'I', 37: 'J', 38: 'K', 39: 'L', 40: 'M', 41: 'N', 42: 'O', 43: 'P', 44: 'Q', 45: 'R', 46: 'S', 47: 'T', 48: 'U', 49: 'V', 50: 'W', 51: 'X', 52: 'Y', 53: '[', 54: '\\', 55: ']', 56: '^', 57: '_', 58: 'a', 59: 'b', 60: 'c', 61: 'd', 62: 'e', 63: 'f', 64: 'g', 65: 'h', 66: 'i', 67: 'j', 68: 'k', 69: 'l', 70: 'm', 71: 'n', 72: 'o', 73: 'p', 74: 'q', 75: 'r', 76: 's', 77: 't', 78: 'u', 79: 'v', 80: 'w', 81: 'x', 82: 'y', 83: 'z', 84: '|', 85: '~'}
+
+# def save_song_to_abc(song, filename="output"):
+#     save_name = "{}.abc".format(filename)
+#     with open(save_name, "w") as f:
+#         f.write(song)
+#     return filename
+
+# def abc2wav(abc_file):
+#     suf = abc_file.rstrip('.abc')
+#     cmd = "abc2midi {} -o {}".format(abc_file, suf + ".mid")
+#     os.system(cmd)
+#     cmd = "timidity {}.mid -Ow {}.wav".format(suf, suf)
+#     return os.system(cmd) 
+
+# def play_song(song):
+#     basename = save_song_to_abc(song)
+#     ret = abc2wav(basename + '.abc')
+#     if ret == 0: #did not suceed
+#         return play_wav(basename+'.wav')
+#     return None
 
 def make_model(unique_chars):
     model = Sequential()
@@ -110,12 +131,15 @@ if(st.button('Generate Music')):
                 pass
 
             # output.abc ---> output.mid
-            # s = converter.parse('output.abc')
-            # s.write('midi', fp='output.mid')
+            s = converter.parse('output.abc')
+            s.write('midi', fp='output.mid')
+
+            # song = AudioSegment.from_file("output.abc")
+            # song.export("output.wav", format="wav")
             
             # output.mid ---> output.wav
-            # FluidSynth().midi_to_audio('output.mid', 'output.wav')
+            FluidSynth().midi_to_audio('output.mid', 'output.wav')
 
-            # st.audio("output.wav", format="audio/wav")
+            st.audio("output.wav", format="audio/wav")
 
 # ---------------------------------------------------------------------------------------------
