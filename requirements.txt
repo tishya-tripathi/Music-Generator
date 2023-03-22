@@ -5,3 +5,4 @@ tensorflow==2.11.0
 pyperclip
 music21
 midi2audio
+fluidsynth
