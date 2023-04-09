@@ -2,33 +2,10 @@ import streamlit as st
 import numpy as np
 from keras.models import Sequential
 from keras.layers import LSTM, Dropout, Dense, Activation, Embedding
-import pyperclip
-import os
 from music21 import converter
-# from pydub import AudioSegment
-from midi2audio import FluidSynth
+from pretty_midi import PrettyMIDI
 
 index_to_char = {0: '\n', 1: ' ', 2: '!', 3: '"', 4: '#', 5: '%', 6: '&', 7: "'", 8: '(', 9: ')', 10: '+', 11: ',', 12: '-', 13: '.', 14: '/', 15: '0', 16: '1', 17: '2', 18: '3', 19: '4', 20: '5', 21: '6', 22: '7', 23: '8', 24: '9', 25: ':', 26: '=', 27: '?', 28: 'A', 29: 'B', 30: 'C', 31: 'D', 32: 'E', 33: 'F', 34: 'G', 35: 'H', 36: 'I', 37: 'J', 38: 'K', 39: 'L', 40: 'M', 41: 'N', 42: 'O', 43: 'P', 44: 'Q', 45: 'R', 46: 'S', 47: 'T', 48: 'U', 49: 'V', 50: 'W', 51: 'X', 52: 'Y', 53: '[', 54: '\\', 55: ']', 56: '^', 57: '_', 58: 'a', 59: 'b', 60: 'c', 61: 'd', 62: 'e', 63: 'f', 64: 'g', 65: 'h', 66: 'i', 67: 'j', 68: 'k', 69: 'l', 70: 'm', 71: 'n', 72: 'o', 73: 'p', 74: 'q', 75: 'r', 76: 's', 77: 't', 78: 'u', 79: 'v', 80: 'w', 81: 'x', 82: 'y', 83: 'z', 84: '|', 85: '~'}
-
-# def save_song_to_abc(song, filename="output"):
-#     save_name = "{}.abc".format(filename)
-#     with open(save_name, "w") as f:
-#         f.write(song)
-#     return filename
-
-# def abc2wav(abc_file):
-#     suf = abc_file.rstrip('.abc')
-#     cmd = "abc2midi {} -o {}".format(abc_file, suf + ".mid")
-#     os.system(cmd)
-#     cmd = "timidity {}.mid -Ow {}.wav".format(suf, suf)
-#     return os.system(cmd) 
-
-# def play_song(song):
-#     basename = save_song_to_abc(song)
-#     ret = abc2wav(basename + '.abc')
-#     if ret == 0: #did not suceed
-#         return play_wav(basename+'.wav')
-#     return None
 
 def make_model(unique_chars):
     model = Sequential()
@@ -100,6 +77,9 @@ def generate_sequence(epoch_num, initial_index, seq_length):
 
 # ------------------------------------Streamlit App------------------------------------
 
+displayGenre = ('Orchestra', 'Grand Piano', 'Acoustic Piano', 'Percussion' ,'Keyboard')
+optionsGenre = list(range(len(displayGenre)))
+
 st.title("AI Music Generator")
 
 modelNo = st.slider("Select the model you want to use", 1, 10, 10)
@@ -110,37 +90,51 @@ initialChar = st.number_input("Enter initial character", 0, 85, step=1, value=65
 st.caption("This will be given as initial character to model for generating sequence.")
 st.text("")
 
-length = st.slider("Select length of music sequence", 100, 1000, 500)
+length = st.slider("Length of music sequence", 100, 1000, 400)
 st.caption("Too small number will generate hardly generate any musical sequence.")
 st.text("")
+
+genre = st.selectbox("Genre", optionsGenre, index=2,format_func=lambda x: displayGenre[x])
+
+sampleRate = st.selectbox("Sampling Rate", [88200, 44100, 22050, 11025], index=1) 
+
 st.text("")
 
 if(st.button('Generate Music')):
+    attempt=0
+    music=None
+    musicMIDI=None
     with st.sidebar:
         with st.spinner("Work in progress..."):
-            music = generate_sequence(modelNo, initialChar, length)
-            abcFile = open('output.abc', 'w')
-            abcFile.write(music)
-            abcFile.close()
-            st.subheader("ABC Notation: ")       
-            st.text_area("", value=music, height=400)
-            try:                                # pyperclip work only in Localhost!
-                pyperclip.copy(music)
-                st.success("Copied to clipboard")
-            except:
-                pass
+            while musicMIDI==None and attempt<=6:
+                try:
+                    attempt+=1
 
-            # output.abc ---> output.mid
-            # s = converter.parse('output.abc')
-            # s.quarterLength = 0.5
-            # s.write('midi', fp='output.mid')
+                    # Generate ABC Notation
+                    music = generate_sequence(modelNo, initialChar, length)
+                    abcFile = open('output.abc', 'w')
+                    abcFile.write(music)
+                    abcFile.close()
 
-            # song = AudioSegment.from_file("output.abc")
-            # song.export("output.wav", format="wav")
+                    # Convert output.abc ---> output.mid
+                    s = converter.parse('output.abc')
+                    s.quarterLength = 0.5
+                    s.write('midi', fp='output.mid')
             
-            # output.mid ---> output.wav
-            # FluidSynth().midi_to_audio('output.mid', 'output.wav')
 
-            # st.audio("output.wav", format="audio/wav")
+                    # Convert output.mid ---> output.wav
+                    musicMIDI = PrettyMIDI(midi_file="output.mid")
+                    fileName = "SoundFont0" + str(genre+1) + ".sf2"
+                    wav = musicMIDI.fluidsynth(sf2_path=fileName)
 
-# ---------------------------------------------------------------------------------------------
+                    st.text_area("", value=music, height=400)
+                    st.audio(wav, sample_rate=sampleRate)
+                    break
+                except:
+                    pass
+            
+            if attempt>6:
+                st.text_area("", value=music, height=400)
+                st.error("Audio Generation Failed.\nTry Again.")
+
+# --------------------------------------------------------------------------------------------
