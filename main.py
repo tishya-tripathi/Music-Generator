@@ -86,7 +86,7 @@ modelNo = st.slider("Select the model you want to use", 1, 10, 10)
 st.caption("Smaller number will generate more Errors in music.")
 st.text("")
 
-initialChar = st.number_input("Enter initial character", 0, 85, step=1, value=65)
+initialChar = st.number_input("Enter initial character", 0, 85, step=1, value=5)
 st.caption("This will be given as initial character to model for generating sequence.")
 st.text("")
 
@@ -96,7 +96,7 @@ st.text("")
 
 genre = st.selectbox("Genre", optionsGenre, index=2,format_func=lambda x: displayGenre[x])
 
-sampleRate = st.selectbox("Sampling Rate", [88200, 44100, 22050, 11025], index=1) 
+sampleRate = st.selectbox("Sampling Rate", [88200, 66150, 44100, 22050, 11025], index=1) 
 
 st.text("")
 
@@ -134,7 +134,26 @@ if(st.button('Generate Music')):
                     pass
             
             if attempt>6:
-                st.text_area("", value=music, height=400)
-                st.error("Audio Generation Failed.\nTry Again.")
+                abcFile = open("output.abc", "r")
+                abcFile_contents = abcFile.read()
+                abcFile.close()        
+
+
+                # Convert output.abc ---> output.mid
+                s = converter.parse('defaultOutput.abc')
+                s.quarterLength = 0.5
+                s.write('midi', fp='output.mid')
+            
+
+                # Convert output.mid ---> output.wav
+                musicMIDI = PrettyMIDI(midi_file="output.mid")
+                fileName = "SoundFont0" + str(genre+1) + ".sf2"
+                wav = musicMIDI.fluidsynth(sf2_path=fileName)
+
+                st.text_area("", value=abcFile_contents, height=400)
+                st.audio(wav, sample_rate=sampleRate)
+
+                
+                
 
 # --------------------------------------------------------------------------------------------
